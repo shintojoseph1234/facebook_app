@@ -20,12 +20,13 @@ from django.views.generic import TemplateView
 
 from facebook_app import views
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
 
-    # path('api/', include('api.urls')),
+    path('api/', include('api.urls')),
+    path('api-auth/', include('rest_framework.urls')),
     # index view path
     path('', views.index),
-    # path('', TemplateView.as_view(template_name='index.html'))
 ]
