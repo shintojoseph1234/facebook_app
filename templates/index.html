@@ -1,0 +1,15 @@
+{% load socialaccount %}
+{% providers_media_js %}
+<html>
+  <head>
+    <title>facebook login</title>
+  </head>
+
+  <body>
+    {{user}}
+    <!-- <a href="{% provider_login_url "facebook" method="js_sdk" %}">facebook connect</a> -->
+    <a href="{% provider_login_url "facebook" method="oauth2" %}">facebook connect</a>
+
+  </body>
+
+</html>
