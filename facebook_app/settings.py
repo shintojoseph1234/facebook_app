@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.facebook',
 
     'api',
-    # 'rest_framework',
+    'rest_framework',
+    'rest_framework_swagger'
 ]
 
 
@@ -80,6 +81,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'facebook_app.wsgi.application'
+
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    # or allow read-only access for unauthenticated users.
+    'DEFAULT_PERMISSION_CLASSES': [],
+    'TEST_REQUEST_DEFAULT_FORMAT': 'json',
+    'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema'
+}
+
+
 
 
 # Database
@@ -145,4 +156,4 @@ AUTHENTICATION_BACKENDS = (
 
 SITE_ID = 1
 
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/api"
