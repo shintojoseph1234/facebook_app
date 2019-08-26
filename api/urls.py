@@ -23,14 +23,12 @@ urlpatterns = [
     path('schema/', get_schema_view(title="facebook_app API"), name="schema_view"),
     #
     # # GET average_price for each day
-    path('pages/', views.pages, name="pages"),
+    path('pages/<str:access_token>/', views.pages, name="pages"),
 
     # # GET average_price null for less than 3 prices
-    path('page_details/<str:page_id>/', views.page_details, name="page_details"),
+    path('page_details/<str:page_id>/<str:access_token>/', views.page_details, name="page_details"),
 
     # POST upload_price
     path('update_page/', views.UpdatePageInfoViewSet.as_view(), name="update_page"),
-
-    # /accounts/facebook/login/
 
 ]
