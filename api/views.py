@@ -1,11 +1,4 @@
-# # Django imports
-# from django.conf import settings
-# from django.db import connection
-# from django.shortcuts import render
-# from django.http import HttpResponse
-# from django.utils.decorators import method_decorator
-# from django.views.decorators.csrf import csrf_exempt
-#
+
 # REST imports
 from rest_framework import status
 from rest_framework.response import Response
@@ -21,19 +14,6 @@ from api.serializers import *
 # # other imports
 import requests
 import facebook
-
-#
-# ################################## configuration file
-# # open configuration file
-# # config_file = open(settings.CONFIGURATION_FILE)
-# # get the configuration data from the file
-# # config_data = json.load(config_file)
-# # close the config file
-# # config_file.close()
-#
-# # Configuration of exchange rate API
-# # exchange_rates_url  = config_data['exchange_rates']['url']
-# # exchange_app_id     = config_data['exchange_rates']['app_id']
 
 
 def get_error_message(error_type, message):
@@ -77,26 +57,22 @@ def get_error_message(error_type, message):
 
 
 @api_view(['GET'])
-def pages(request):
+def pages(request, access_token):
     '''
     List of pages user owns.
 
     Returns:
         list: returns a list of pages user owns.
     '''
-    # obtain current user
-    user = request.user
-    # initialize and empty response list
-    response_list = []
-    # if no user present (AnonymousUser) skip
-    if str(user) != "AnonymousUser":
-        # get the access_token of user
-        access_token = SocialToken.objects.get(account__user=user, account__provider='facebook')
+
+    # try
+    try:
         # pass the access_token to GraphAPI
         graph = facebook.GraphAPI(access_token=access_token)
         # find the datas available on request for the user
         pages_data = graph.get_object("/me/accounts")
-
+        # initialize and empty response list
+        response_list = []
         # if pages_data is not empty
         if pages_data:
             # for each page details in pages_data
@@ -123,18 +99,22 @@ def pages(request):
             response_dict['id'] = None
             # append to response_list
             response_list.append(response_dict)
+    except:
+        # initialize and empty response list
+        response_list = []
+
+
     # success response
     success = [{
                 "status": "success",
                 "data": response_list
                 }]
 
-
     return Response(success, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
-def page_details(request, page_id):
+def page_details(request, page_id, access_token):
     '''
     Details of single page user owns.
 
@@ -144,16 +124,25 @@ def page_details(request, page_id):
     Returns:
         list: returns details of the page.
     '''
-    # obtain current user
-    user = request.user
-    # initialize and empty response list
-    response_list = []
-    # if no user present (AnonymousUser) skip
-    if str(user) != "AnonymousUser":
-        # get the access_token of user
-        access_token = SocialToken.objects.get(account__user=user, account__provider='facebook')
+
+    try:
+        # initialize and empty response list
+        response_list = []
         # pass the access_token to GraphAPI
         graph = facebook.GraphAPI(access_token=access_token)
+        # find the datas available on request for the user
+        pages_data = graph.get_object("/me/accounts")
+        # set page_access_token as none
+        page_access_token = None
+        # for each_page details search matching id
+        for each_page in pages_data['data']:
+            # find th matching page id
+            if each_page['id'] == page_id:
+                # obtain the access token
+                page_access_token = each_page['access_token']
+
+        # pass the access_token to GraphAPI
+        graph = facebook.GraphAPI(access_token=page_access_token)
         # fields to obtain details from page
         field_list = '''  phone,
                           location,
@@ -169,6 +158,10 @@ def page_details(request, page_id):
         page_details = graph.get_object(id=str(page_id), fields=field_list )
         # append page_details to response_list
         response_list.append(page_details)
+    except:
+        # initialize and empty response list
+        response_list = []
+
     # success response
     success = [{
                 "status": "success",
@@ -197,7 +190,6 @@ class UpdatePageInfoViewSet(GenericAPIView):
 
         # obtain the data
         data = request.data
-        print (data)
         # check data with serializer
         serializer = UpdatePageInfoSerializer(data=data)
         # if serialiser not valid
@@ -207,10 +199,9 @@ class UpdatePageInfoViewSet(GenericAPIView):
 
         # inputs from API
         page_id              = data['page_id']
+        access_token         = data['access_token']
         update_data          = data['update_data']
 
-        # get the access_token of user
-        access_token = SocialToken.objects.get(account__user=request.user, account__provider='facebook')
         # pass the access_token to GraphAPI
         graph = facebook.GraphAPI(access_token=access_token)
         # find the datas available on request for the user
